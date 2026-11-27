@@ -216,3 +216,18 @@ button:focus-visible,input:focus-visible,select:focus-visible,button:focus,input
 }
 
 .privacy-link{margin-left:auto;color:#42d9cf;text-decoration:none}.privacy-link:hover{text-decoration:underline}.footer-right:not(.privacy-link){margin-left:0}
+
+
+/* Android 1.3.0: expanded sidebar navigation, category counts and channel rows */
+.sidebar-head-actions{display:flex;align-items:center;gap:8px}
+.sidebar-submenu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 16px 13px}
+.sidebar-submenu[hidden]{display:none}
+.sidebar-submenu button{min-width:0;padding:10px 9px;border:1px solid #2d5360;border-radius:8px;background:#102a38;color:#d8f5f2;text-align:left;font-size:12px;font-weight:650}
+.sidebar-submenu button:focus-visible,.sidebar-submenu button:hover{background:#174454;border-color:#39d7c9;outline:2px solid #39d7c9;outline-offset:1px}
+.group-chip{display:inline-flex;align-items:center;gap:8px}
+.group-chip small{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#263d50;color:#c9e9e5;font-size:10px}
+.group-chip.active small{background:#0b5554;color:#fff}
+.subtitle-control{border:1px solid #2b5960;border-radius:8px;padding:5px 8px;background:#102432}
+.subtitle-control .mini-select{min-width:150px}
+.channel-info small{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:760px){.sidebar-submenu{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-submenu button{font-size:11px}}
