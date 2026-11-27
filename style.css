@@ -214,3 +214,5 @@ button:focus-visible,input:focus-visible,select:focus-visible,button:focus,input
  footer{padding:10px 14px;height:auto;min-height:38px;flex-wrap:wrap}
  .footer-right{margin-left:0}
 }
+
+.privacy-link{margin-left:auto;color:#42d9cf;text-decoration:none}.privacy-link:hover{text-decoration:underline}.footer-right:not(.privacy-link){margin-left:0}
