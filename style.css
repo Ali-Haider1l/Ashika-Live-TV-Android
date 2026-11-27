@@ -231,3 +231,22 @@ button:focus-visible,input:focus-visible,select:focus-visible,button:focus,input
 .subtitle-control .mini-select{min-width:150px}
 .channel-info small{overflow:hidden;text-overflow:ellipsis}
 @media(max-width:760px){.sidebar-submenu{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-submenu button{font-size:11px}}
+
+/* Ashika Live TV Android 6.0 — refined player and library experience */
+body.theme-amoled,.theme-amoled .app-shell{background:#000!important}
+.theme-amoled .topbar,.theme-amoled .sidebar,.theme-amoled dialog{background:#050505!important}
+.theme-amoled .player-wrap,.theme-amoled .channel-list{background:#000}
+.theme-amoled .sidebar{border-color:#303030}
+.theme-amoled .channel:hover,.theme-amoled .channel.active{background:#111;border-color:#22bfb2}
+.compact-channels .channel{min-height:48px;padding:6px 9px;gap:9px}
+.compact-channels .channel-logo{width:34px;height:34px}
+.compact-channels .channel-info strong{font-size:14px}
+.compact-channels .channel-info small{font-size:11px;margin-top:2px}
+#share-channel-btn{border-color:#267d7c;color:#baf8ef}
+#copy-stream-btn{border-color:#267d7c;color:#baf8ef}
+.channel-number{width:26px;flex:none;color:#6f9ca5;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.channel.is-playing .channel-number{color:#46e0ce}
+.channel.is-playing .channel-info strong:after{content:"LIVE";display:inline-block;margin-left:8px;padding:2px 5px;border-radius:4px;background:#147d75;color:#e8fffb;font-size:8px;letter-spacing:.7px;vertical-align:2px}
+#backup-dialog .dialog-actions{flex-wrap:wrap}
+#clear-history-btn{margin-right:auto}
+@media(max-width:760px){#share-channel-btn{flex:1}.player-actions button{min-height:38px}}
