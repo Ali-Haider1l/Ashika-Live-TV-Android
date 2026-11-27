@@ -250,3 +250,18 @@ body.theme-amoled,.theme-amoled .app-shell{background:#000!important}
 #backup-dialog .dialog-actions{flex-wrap:wrap}
 #clear-history-btn{margin-right:auto}
 @media(max-width:760px){#share-channel-btn{flex:1}.player-actions button{min-height:38px}}
+
+
+/* Android v6.1: persistent vertical channel navigation beside the channel list */
+.sidebar{min-width:0}
+.sidebar-body{display:flex;flex:1 1 0%;min-height:0;overflow:hidden}
+.sidebar-submenu{display:flex;flex:0 0 112px;flex-direction:column;gap:7px;overflow-y:auto;overflow-x:hidden;padding:8px 8px 10px;border-right:1px solid #294253;background:#0a1722}
+.sidebar-submenu[hidden]{display:none}
+.sidebar-submenu button{width:100%;min-height:48px;padding:8px 6px;text-align:center;line-height:1.25;font-size:11px;white-space:normal;overflow-wrap:anywhere}
+.sidebar-content{display:flex;flex:1 1 0%;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+.sidebar-content .filter-row{flex-wrap:wrap}
+.sidebar-content .search{width:calc(100% - 28px);min-width:0}
+.sidebar-content .groups{flex:0 0 auto;max-width:100%}
+.sidebar-content .channel-list{flex:1 1 0%;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.sidebar-content .sidebar-footer{flex-wrap:wrap}
+@media(max-width:760px){.sidebar-body{min-height:0}.sidebar-submenu{flex-basis:92px;padding:7px 5px}.sidebar-submenu button{font-size:10px;min-height:44px}.sidebar-content .filter-row{gap:4px;padding-left:8px;padding-right:8px}.sidebar-content .search{margin-left:8px;width:calc(100% - 16px)}.sidebar-content .sort-row{padding-left:8px;padding-right:8px}.sidebar-content .groups{padding-left:8px;padding-right:8px}}
