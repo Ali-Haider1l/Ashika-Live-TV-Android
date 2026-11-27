@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Rational;
 import android.view.View;
+import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
@@ -21,6 +22,16 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.ump.ConsentInformation;
+import com.google.android.ump.ConsentRequestParameters;
+import com.google.android.ump.UserMessagingPlatform;
 import android.widget.Toast;
 
 import androidx.webkit.WebViewAssetLoader;
@@ -34,6 +45,11 @@ public class MainActivity extends Activity {
     private FrameLayout root;
     private int previousOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     private boolean pageLoaded = false;
+    private FrameLayout adContainer;
+    private AdView bannerAdView;
+    private boolean adsInitialized = false;
+    private boolean bannerLoaded = false;
+    private static final String TEST_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
 
     @Override
     @SuppressWarnings({"SetJavaScriptEnabled", "deprecation"})
@@ -42,7 +58,9 @@ public class MainActivity extends Activity {
         configureSystemBars();
         root = new FrameLayout(this);
         createWebView();
+        createAdContainer();
         setContentView(root);
+        requestAdConsent();
         if (savedInstanceState == null) {
             webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
         } else {
@@ -169,6 +187,7 @@ public class MainActivity extends Activity {
                         FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
                 webView.setVisibility(View.GONE);
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                if (adContainer != null) adContainer.setVisibility(View.GONE);
                 hideSystemUi();
             }
 
@@ -183,8 +202,76 @@ public class MainActivity extends Activity {
             }
         });
 
-        root.addView(webView, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        FrameLayout.LayoutParams webParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        root.addView(webView, webParams);
+    }
+
+
+    private int dp(float value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private void createAdContainer() {
+        adContainer = new FrameLayout(this);
+        adContainer.setBackgroundColor(Color.rgb(8, 13, 24));
+        adContainer.setVisibility(View.GONE);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, dp(50), Gravity.BOTTOM);
+        root.addView(adContainer, params);
+    }
+
+    private void requestAdConsent() {
+        ConsentInformation consentInformation = UserMessagingPlatform.getConsentInformation(this);
+        ConsentRequestParameters parameters = new ConsentRequestParameters.Builder().build();
+
+        consentInformation.requestConsentInfoUpdate(
+                this,
+                parameters,
+                () -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(
+                        this,
+                        formError -> {
+                            if (consentInformation.canRequestAds()) initializeAds();
+                        }),
+                requestError -> {
+                    if (consentInformation.canRequestAds()) initializeAds();
+                });
+
+        if (consentInformation.canRequestAds()) initializeAds();
+    }
+
+    private void initializeAds() {
+        if (adsInitialized || isFinishing()) return;
+        adsInitialized = true;
+        MobileAds.initialize(this, initializationStatus ->
+                runOnUiThread(this::loadTestBanner));
+    }
+
+    private void loadTestBanner() {
+        if (isFinishing() || bannerAdView != null) return;
+        bannerAdView = new AdView(this);
+        bannerAdView.setAdSize(AdSize.BANNER);
+        bannerAdView.setAdUnitId(TEST_BANNER_AD_UNIT_ID);
+        FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
+                dp(320), dp(50), Gravity.CENTER);
+        adContainer.addView(bannerAdView, adParams);
+        bannerAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                bannerLoaded = true;
+                runOnUiThread(() -> {
+                    if (fullscreenView == null) adContainer.setVisibility(View.VISIBLE);
+                });
+            }
+
+            @Override
+            public void onAdFailedToLoad(LoadAdError error) {
+                bannerLoaded = false;
+                runOnUiThread(() -> adContainer.setVisibility(View.GONE));
+            }
+        });
+        // Google-provided sample ad unit: test ads only; no revenue is generated.
+        bannerAdView.loadAd(new AdRequest.Builder().build());
     }
 
     private void hideSystemUi() {
@@ -206,6 +293,7 @@ public class MainActivity extends Activity {
         root.removeView(fullscreenView);
         fullscreenView = null;
         webView.setVisibility(View.VISIBLE);
+        if (adContainer != null && bannerLoaded) adContainer.setVisibility(View.VISIBLE);
         showSystemUi();
         setRequestedOrientation(previousOrientation);
         if (fullscreenCallback != null) {
@@ -271,6 +359,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         if (webView != null) webView.onPause();
+        if (bannerAdView != null) bannerAdView.pause();
         super.onPause();
     }
 
@@ -278,11 +367,16 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (webView != null) webView.onResume();
+        if (bannerAdView != null) bannerAdView.resume();
     }
 
     @Override
     protected void onDestroy() {
         if (fileCallback != null) fileCallback.onReceiveValue(null);
+        if (bannerAdView != null) {
+            bannerAdView.destroy();
+            bannerAdView = null;
+        }
         if (webView != null) {
             webView.stopLoading();
             webView.loadUrl("about:blank");
