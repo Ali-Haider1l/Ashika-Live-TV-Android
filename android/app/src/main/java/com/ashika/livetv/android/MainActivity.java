@@ -198,8 +198,8 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onConsoleMessage(android.webkit.ConsoleMessage message) {
-                super.onConsoleMessage(message);
+            public boolean onConsoleMessage(android.webkit.ConsoleMessage message) {
+                return super.onConsoleMessage(message);
             }
         });
 
