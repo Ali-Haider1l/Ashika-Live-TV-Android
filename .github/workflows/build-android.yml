@@ -34,7 +34,7 @@ jobs:
       - name: Prepare exact web player assets
         run: |
           mkdir -p android/app/src/main/assets
-          cp index.html app.js style.css stream-refresh.js android/app/src/main/assets/
+          cp index.html app.js style.css stream-refresh.js privacy-policy.html android/app/src/main/assets/
 
       - name: Validate source files
         run: |
