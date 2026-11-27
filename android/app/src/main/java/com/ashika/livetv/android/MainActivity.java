@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
     private int previousOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     private boolean pageLoaded = false;
     private FrameLayout adContainer;
+    private FrameLayout.LayoutParams webViewLayoutParams;
     private AdView bannerAdView;
     private boolean adsInitialized = false;
     private boolean bannerLoaded = false;
@@ -202,9 +203,9 @@ public class MainActivity extends Activity {
             }
         });
 
-        FrameLayout.LayoutParams webParams = new FrameLayout.LayoutParams(
+        webViewLayoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-        root.addView(webView, webParams);
+        root.addView(webView, webViewLayoutParams);
     }
 
 
@@ -247,6 +248,12 @@ public class MainActivity extends Activity {
                 runOnUiThread(this::loadTestBanner));
     }
 
+    private void reserveAdSpace(boolean reserve) {
+        if (webViewLayoutParams == null || webView == null) return;
+        webViewLayoutParams.bottomMargin = reserve ? dp(50) : 0;
+        webView.setLayoutParams(webViewLayoutParams);
+    }
+
     private void loadTestBanner() {
         if (isFinishing() || bannerAdView != null) return;
         bannerAdView = new AdView(this);
@@ -260,14 +267,20 @@ public class MainActivity extends Activity {
             public void onAdLoaded() {
                 bannerLoaded = true;
                 runOnUiThread(() -> {
-                    if (fullscreenView == null) adContainer.setVisibility(View.VISIBLE);
+                    if (fullscreenView == null) {
+                        reserveAdSpace(true);
+                        adContainer.setVisibility(View.VISIBLE);
+                    }
                 });
             }
 
             @Override
             public void onAdFailedToLoad(LoadAdError error) {
                 bannerLoaded = false;
-                runOnUiThread(() -> adContainer.setVisibility(View.GONE));
+                runOnUiThread(() -> {
+                    adContainer.setVisibility(View.GONE);
+                    reserveAdSpace(false);
+                });
             }
         });
         // Google-provided sample ad unit: test ads only; no revenue is generated.
@@ -293,7 +306,10 @@ public class MainActivity extends Activity {
         root.removeView(fullscreenView);
         fullscreenView = null;
         webView.setVisibility(View.VISIBLE);
-        if (adContainer != null && bannerLoaded) adContainer.setVisibility(View.VISIBLE);
+        if (bannerLoaded) {
+            reserveAdSpace(true);
+            if (adContainer != null) adContainer.setVisibility(View.VISIBLE);
+        }
         showSystemUi();
         setRequestedOrientation(previousOrientation);
         if (fullscreenCallback != null) {
