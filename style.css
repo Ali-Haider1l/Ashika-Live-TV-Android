@@ -168,3 +168,49 @@ dialog{width:92vw;max-width:540px}
 @media(max-width:700px){.sidebar{width:100%;height:auto;min-height:320px}.channel-info strong{font-size:15px}.channel-info small{font-size:12px}}
 
 .server-lookup .diagnostics-output{max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin-top:10px;padding:10px;border-radius:8px;background:#080d18;color:#d9e5f7;font-size:12px;line-height:1.5}.server-lookup button:disabled{opacity:.55;pointer-events:none}
+
+
+/* Ashika Android visual identity — midnight, teal and warm gold */
+:root{--bg:#070b16;--line:#26384a;--muted:#9aaabd;--accent:#20d6c2}
+.app-shell{background:radial-gradient(ellipse at 12% -5%,#123c49 0,transparent 38%),radial-gradient(ellipse at 92% 12%,#24204b 0,transparent 34%),#070b16}
+.topbar{background:linear-gradient(105deg,#0a1724f5,#11152af5);border-bottom-color:#24404d}
+.brand-mark{background:linear-gradient(145deg,#24d8c5,#1679b7);color:#06131d;box-shadow:0 5px 22px #18bcae35}
+.brand strong span{color:#37e0d0}
+.brand small{letter-spacing:2.2px}
+.primary{background:linear-gradient(120deg,#1bcdbd,#167bb9);color:#04131a;box-shadow:0 5px 18px #16b9b033}
+.outline{border-color:#345166;background:#122438}
+.outline:hover,.icon-btn:hover{border-color:#3ad8ca;background:#18394a}
+.player-wrap{border-color:#24505b;box-shadow:0 14px 42px #0005}
+.player-badge{background:#0b827f;color:#dffffb}
+.play-symbol{background:linear-gradient(145deg,#26d7c4,#1477b4);color:#031b22;box-shadow:0 8px 28px #18c7b54d}
+.now-playing small{color:#36dccc}
+.sidebar{background:linear-gradient(160deg,#101d2d,#0d1424);border-color:#294253;box-shadow:0 12px 34px #0003}
+.filter-chip.active,.group-chip.active{background:#137d7b;border-color:#25cbbd;color:#effffc}
+.channel:hover,.channel.active{background:#153144;border-color:#287c80}
+.channel:focus{background:#173b4c;border-color:#39d7c9;box-shadow:0 0 0 2px #39d7c955}
+.channel-logo{background:#163348;color:#4ce2d3}
+.fav{color:#f3c86b}
+footer span{color:#3bd9cb}
+.dialog-head small{color:#54d9ce}
+dialog{border-color:#2b5960;background:linear-gradient(145deg,#112333,#11172a)}
+.field{border-color:#31505d}
+.file-label{border-color:#3d7779}
+button:focus-visible,input:focus-visible,select:focus-visible,button:focus,input:focus,select:focus{outline-color:#4ce3d6}
+.network-status{color:#69dfbd}
+.program-track span{background:#2bd2c4}
+.save-status{color:#a7c5ce}
+@media(max-width:760px){
+ html,body{height:auto;min-height:100%;overflow:auto}
+ .app-shell{height:auto;min-height:100vh}
+ .topbar{height:auto;min-height:70px;padding:12px 14px;gap:12px;align-items:flex-start;flex-direction:column}
+ .top-actions{width:100%;overflow-x:auto;padding-bottom:4px;flex-wrap:nowrap}
+ .layout{display:flex;flex-direction:column;padding:12px;gap:14px}
+ .watch-area{min-height:0}
+ .player-wrap{height: min(56vw,360px);min-height:190px;flex:none}
+ .now-playing{align-items:flex-start;flex-direction:column;gap:12px}
+ .player-actions{flex-wrap:wrap}
+ .player-tools{flex-wrap:wrap}
+ .sidebar{height:58vh;min-height:340px}
+ footer{padding:10px 14px;height:auto;min-height:38px;flex-wrap:wrap}
+ .footer-right{margin-left:0}
+}
