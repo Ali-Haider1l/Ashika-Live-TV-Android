@@ -269,9 +269,11 @@ function handleRemoteKey(e){
   if(buttons[i])focusAndReveal(buttons[i]);
   return;
  }
- if(inList&&key==="ArrowLeft"){const groups=Array.from($("groups").querySelectorAll(".group-chip"));focusAndReveal(groups.length?groups[groups.length-1]:$("sort-select"));return;}
+ if(inList&&key==="ArrowLeft"){const menuItems=Array.from($("sidebar-submenu").querySelectorAll("button"));focusAndReveal(menuItems[0]||$("sort-select"));return;}
  if(inList&&key==="ArrowRight"){focusFirst(".player-actions button");return;}
  if(inSidebar){
+  const menuRow=active.closest&&active.closest(".sidebar-submenu");
+  if(menuRow&&(key==="ArrowUp"||key==="ArrowDown")){const items=Array.from(menuRow.querySelectorAll("button"));let i=items.indexOf(active);i=key==="ArrowDown"?Math.min(i+1,items.length-1):Math.max(i-1,0);if(items[i])focusAndReveal(items[i]);return;}
   const filterRow=active.closest&&active.closest(".filter-row"),groupRow=active.closest&&active.closest(".groups");
   if((key==="ArrowLeft"||key==="ArrowRight")&&filterRow){focusSibling(filterRow,active,".filter-chip",key==="ArrowRight"?1:-1);return;}
   if((key==="ArrowLeft"||key==="ArrowRight")&&groupRow){focusSibling(groupRow,active,".group-chip",key==="ArrowRight"?1:-1);return;}
