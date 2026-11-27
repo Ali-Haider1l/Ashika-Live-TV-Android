@@ -3,17 +3,28 @@
 A separate Android edition of Ashika Live TV.
 
 - Package ID: `com.ashika.livetv.android`
-- Version: `1.3.0`
+- Version: `6.0.0`
 - Minimum Android: 6.0 (API 23)
 - Android wrapper: Java + Android WebView
 - The playlist/player web files were copied from the separate webOS project when this Android repository was initialized.
 - Android-specific code and advertising integration live in this repository only.
 - The webOS IPK repository is not modified by this project.
 
+## Android 6.0 major update
+
+- Midnight Teal and AMOLED Black appearance modes
+- Compact channel rows for dense playlists
+- Share the current channel using Android's share sheet, with clipboard fallback
+- Copy a stream URL directly from channel information
+- Clear recently watched history without deleting playlists or favourites
+- Numbered channel rows and an active playback indicator
+- Versioned local storage migration from older v3/v4 app data
+
 ## Android features
 
 - M3U/M3U8 URL and local-file playlist import
 - Sidebar quick-action submenu for channels, favourites, recent, categories, playlists, guide and settings
+- Channel sharing and stream URL copy
 - Category channel counts and search across channel names and group names
 - Multiple playlists, favourites, recent channels, search and sorting
 - TV Guide/XMLTV support
@@ -23,7 +34,7 @@ A separate Android edition of Ashika Live TV.
 - Local backup and restore
 - Parental PIN option
 - Server diagnostics
-- Responsive Android-specific midnight/teal visual theme
+- Responsive Android-specific midnight/teal visual theme with AMOLED black option and compact channel list
 
 ## Advertising
 
