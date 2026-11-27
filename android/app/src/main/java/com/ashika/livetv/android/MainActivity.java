@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
         settings.setBlockNetworkImage(false);
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        settings.setSafeBrowsingEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) settings.setSafeBrowsingEnabled(true);
         settings.setCacheMode(android.webkit.WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
@@ -123,12 +123,13 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+            public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
                 pageLoaded = false;
                 root.removeView(webView);
                 webView.destroy();
                 createWebView();
                 webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+                return true;
             }
         });
 
