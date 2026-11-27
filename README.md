@@ -3,7 +3,7 @@
 A separate Android edition of Ashika Live TV.
 
 - Package ID: `com.ashika.livetv.android`
-- Version: `1.2.0`
+- Version: `1.3.0`
 - Minimum Android: 6.0 (API 23)
 - Android wrapper: Java + Android WebView
 - The playlist/player web files were copied from the separate webOS project when this Android repository was initialized.
@@ -13,8 +13,11 @@ A separate Android edition of Ashika Live TV.
 ## Android features
 
 - M3U/M3U8 URL and local-file playlist import
+- Sidebar quick-action submenu for channels, favourites, recent, categories, playlists, guide and settings
+- Category channel counts and search across channel names and group names
 - Multiple playlists, favourites, recent channels, search and sorting
 - TV Guide/XMLTV support
+- HLS and native text-track subtitle selection where exposed by the stream
 - Quality, audio, subtitle, speed and sleep-timer controls where supported by the stream
 - Fullscreen landscape playback and Picture-in-Picture
 - Local backup and restore
