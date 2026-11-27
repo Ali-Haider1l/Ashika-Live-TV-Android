@@ -1,19 +1,27 @@
 package com.ashika.livetv.android;
 
 import android.app.Activity;
+import android.app.PictureInPictureParams;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Rational;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.webkit.WebViewAssetLoader;
 
@@ -24,26 +32,57 @@ public class MainActivity extends Activity {
     private View fullscreenView;
     private WebChromeClient.CustomViewCallback fullscreenCallback;
     private FrameLayout root;
+    private int previousOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+    private boolean pageLoaded = false;
 
     @Override
-    @SuppressWarnings("SetJavaScriptEnabled")
+    @SuppressWarnings({"SetJavaScriptEnabled", "deprecation"})
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        configureSystemBars();
+        root = new FrameLayout(this);
+        createWebView();
+        setContentView(root);
+        if (savedInstanceState == null) {
+            webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+        } else {
+            webView.restoreState(savedInstanceState);
+            if (webView.getUrl() == null) webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+        }
+    }
+
+    private void configureSystemBars() {
         Window window = getWindow();
         window.setStatusBarColor(Color.rgb(8, 13, 24));
         window.setNavigationBarColor(Color.rgb(8, 13, 24));
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
 
-        root = new FrameLayout(this);
+    @SuppressWarnings({"SetJavaScriptEnabled", "deprecation"})
+    private void createWebView() {
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(8, 13, 24));
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
-        webView.getSettings().setAllowFileAccess(false);
-        webView.getSettings().setAllowContentAccess(true);
-        webView.getSettings().setLoadsImagesAutomatically(true);
-        webView.getSettings().setSupportMultipleWindows(false);
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+
+        android.webkit.WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(true);
+        settings.setLoadsImagesAutomatically(true);
+        settings.setBlockNetworkImage(false);
+        settings.setSupportMultipleWindows(false);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
+        settings.setSafeBrowsingEnabled(true);
+        settings.setCacheMode(android.webkit.WebSettings.LOAD_DEFAULT);
+        settings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+
+        CookieManager cookies = CookieManager.getInstance();
+        cookies.setAcceptCookie(true);
+        cookies.setAcceptThirdPartyCookies(webView, true);
 
         final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -57,8 +96,39 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String scheme = request.getUrl().getScheme();
-                return !("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme));
+                Uri uri = request.getUrl();
+                String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+                if ("https".equals(scheme) || "http".equals(scheme)) return false;
+                if ("intent".equals(scheme) || "mailto".equals(scheme) || "tel".equals(scheme)) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    } catch (Exception ignored) {
+                        Toast.makeText(MainActivity.this, "No app can open this link", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                pageLoaded = true;
+                CookieManager.getInstance().flush();
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) {
+                    Toast.makeText(MainActivity.this, "Unable to load Ashika Live TV. Check your connection.", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                pageLoaded = false;
+                root.removeView(webView);
+                webView.destroy();
+                createWebView();
+                webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
             }
         });
 
@@ -67,14 +137,21 @@ public class MainActivity extends Activity {
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
                 fileCallback = callback;
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("*/*");
                 intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {
                         "audio/x-mpegurl", "application/vnd.apple.mpegurl",
-                        "application/octet-stream", "text/plain"
+                        "application/x-mpegURL", "text/plain", "application/octet-stream"
                 });
-                startActivityForResult(Intent.createChooser(intent, "Choose M3U playlist"), FILE_REQUEST);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                try {
+                    startActivityForResult(intent, FILE_REQUEST);
+                } catch (Exception e) {
+                    fileCallback = null;
+                    callback.onReceiveValue(null);
+                    Toast.makeText(MainActivity.this, "Unable to open file picker", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             }
 
@@ -84,30 +161,43 @@ public class MainActivity extends Activity {
                     callback.onCustomViewHidden();
                     return;
                 }
+                previousOrientation = getRequestedOrientation();
                 fullscreenView = view;
                 fullscreenCallback = callback;
                 root.addView(fullscreenView, new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
                 webView.setVisibility(View.GONE);
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_FULLSCREEN |
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                hideSystemUi();
             }
 
             @Override
             public void onHideCustomView() {
                 hideFullscreen();
             }
+
+            @Override
+            public void onConsoleMessage(android.webkit.ConsoleMessage message) {
+                super.onConsoleMessage(message);
+            }
         });
 
         root.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        setContentView(root);
-        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+    }
+
+    private void hideSystemUi() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN |
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
+
+    private void showSystemUi() {
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
     private void hideFullscreen() {
@@ -115,7 +205,8 @@ public class MainActivity extends Activity {
         root.removeView(fullscreenView);
         fullscreenView = null;
         webView.setVisibility(View.VISIBLE);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+        showSystemUi();
+        setRequestedOrientation(previousOrientation);
         if (fullscreenCallback != null) {
             fullscreenCallback.onCustomViewHidden();
             fullscreenCallback = null;
@@ -123,6 +214,7 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_REQUEST) {
@@ -130,6 +222,31 @@ public class MainActivity extends Activity {
                     ? new Uri[] { data.getData() } : null;
             if (fileCallback != null) fileCallback.onReceiveValue(result);
             fileCallback = null;
+        }
+    }
+
+    @Override
+    public void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && fullscreenView != null
+                && getPackageManager().hasSystemFeature("android.software.picture_in_picture")) {
+            try {
+                PictureInPictureParams params = new PictureInPictureParams.Builder()
+                        .setAspectRatio(new Rational(16, 9))
+                        .build();
+                enterPictureInPictureMode(params);
+            } catch (Exception ignored) { }
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+        if (webView != null) {
+            webView.setVisibility(isInPictureInPictureMode ? View.GONE : View.VISIBLE);
+        }
+        if (fullscreenView != null) {
+            fullscreenView.setVisibility(isInPictureInPictureMode ? View.VISIBLE : View.VISIBLE);
         }
     }
 
@@ -145,10 +262,30 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (webView != null) webView.saveState(outState);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onPause() {
+        if (webView != null) webView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) webView.onResume();
+    }
+
+    @Override
     protected void onDestroy() {
         if (fileCallback != null) fileCallback.onReceiveValue(null);
         if (webView != null) {
+            webView.stopLoading();
             webView.loadUrl("about:blank");
+            webView.removeAllViews();
             webView.destroy();
             webView = null;
         }
