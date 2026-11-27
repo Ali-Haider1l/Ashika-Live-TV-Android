@@ -205,6 +205,7 @@ public class MainActivity extends Activity {
 
         webViewLayoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        if (bannerLoaded) webViewLayoutParams.bottomMargin = dp(50);
         root.addView(webView, webViewLayoutParams);
     }
 
